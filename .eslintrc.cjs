@@ -1,3 +1,14 @@
+const fs = require('fs');
+
+let autoImportGlobals = {};
+try {
+  const raw = fs.readFileSync('./.eslintrc-auto-import.json', 'utf8');
+  const parsed = JSON.parse(raw);
+  if (parsed && parsed.globals) autoImportGlobals = parsed.globals;
+} catch (e) {
+  // If the auto-import JSON is missing or invalid, continue without it.
+}
+
 module.exports = {
   env: {
     browser: true,
@@ -8,12 +19,12 @@ module.exports = {
     'airbnb-base',
     'plugin:vue/vue3-recommended',
     'plugin:tailwindcss/recommended',
-    './.eslintrc-auto-import.json',
   ],
   parserOptions: {
     ecmaVersion: 2021,
   },
   plugins: ['vue', 'tailwindcss'],
+  globals: Object.assign({}, autoImportGlobals),
   rules: {
     'import/extensions': ['error', 'always', {
       js: 'always',
