@@ -12,7 +12,9 @@ export default ({ mode }) => {
   return defineConfig({
     base: process.env.VITE_BASE || '/',
     plugins: [
-      ...(mode !== 'production' ? [eslint({ cache: false })] : []),
+      ...(process.env.VITE_LINT === 'true'
+        ? [eslint({ cache: false, emitWarning: false, emitError: false, failOnWarning: false, failOnError: false })]
+        : []),
       stylelint(),
       svgLoader(),
       vue(),

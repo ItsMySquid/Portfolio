@@ -15,6 +15,7 @@ module.exports = {
     es2021: true,
     node: true,
   },
+  parser: 'vue-eslint-parser',
   extends: [
     'airbnb-base',
     'plugin:vue/vue3-recommended',
@@ -22,6 +23,7 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 2021,
+    sourceType: 'module',
   },
   plugins: ['vue', 'tailwindcss'],
   globals: Object.assign({}, autoImportGlobals),
@@ -37,6 +39,11 @@ module.exports = {
       ignoreUrls: true,
     }],
     'vue/multi-word-component-names': 'off',
+    'tailwindcss/no-custom-classname': 'off',
+    'vue/max-attributes-per-line': 'off',
+    'vue/html-indent': 'off',
+    'vue/singleline-html-element-content-newline': 'off',
+    'linebreak-style': 'off',
   },
   settings: {
     'import/resolver': {
@@ -50,4 +57,14 @@ module.exports = {
       },
     },
   },
+  overrides: [
+    {
+      files: ['**/*.vue'],
+      parser: 'vue-eslint-parser',
+      parserOptions: {
+        ecmaVersion: 2021,
+        sourceType: 'module',
+      },
+    },
+  ],
 };

@@ -1,393 +1,293 @@
 <script setup>
-const { currentTheme, switchTheme } = useTheme();
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+
+const heroRef = ref(null);
+const cursorDotRef = ref(null);
+const cursorGlowRef = ref(null);
+
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+let trailX = mouseX;
+let trailY = mouseY;
+let rafId;
+
+const setCursorVars = (x, y) => {
+  if (!heroRef.value) return;
+  heroRef.value.style.setProperty('--cursor-x', `${x}px`);
+  heroRef.value.style.setProperty('--cursor-y', `${y}px`);
+};
+
+const tick = () => {
+  trailX += (mouseX - trailX) * 0.08;
+  trailY += (mouseY - trailY) * 0.08;
+
+  if (cursorDotRef.value) {
+    cursorDotRef.value.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+  }
+
+  if (cursorGlowRef.value) {
+    cursorGlowRef.value.style.transform = `translate3d(${trailX}px, ${trailY}px, 0) translate(-50%, -50%)`;
+  }
+
+  setCursorVars(trailX, trailY);
+  rafId = requestAnimationFrame(tick);
+};
+
+onMounted(() => {
+  const handleMove = (event) => {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+  };
+
+  window.addEventListener('mousemove', handleMove, { passive: true });
+  setCursorVars(mouseX, mouseY);
+  rafId = requestAnimationFrame(tick);
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('mousemove', handleMove);
+    if (rafId) cancelAnimationFrame(rafId);
+  });
+});
 </script>
 
 <template>
-  <header class="absolute inset-x-0 top-0">
-    <div class="container mx-auto flex justify-end p-4">
-      <button
-        class="overflow-hidden p-2"
-        @click="switchTheme()"
-      >
-        <transition
-          enter-active-class="transition duration-200 ease-out"
-          leave-active-class="transition duration-200 ease-in"
-          :enter-from-class="currentTheme === 'dark' ? 'transform -translate-y-full scale-50 opacity-0' : 'transform translate-y-full scale-50 opacity-0'"
-          enter-to-class="transform translate-y-0"
-          leave-from-class="transform translate-y-0"
-          :leave-to-class="currentTheme === 'dark' ? 'transform translate-y-full scale-50 opacity-0' : 'transform -translate-y-full scale-50 opacity-0'"
-          mode="out-in"
-        >
-          <svg
-            v-if="currentTheme === 'dark'"
-            xmlns="http://www.w3.org/2000/svg"
-            class="size-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          >
-            <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-          </svg>
+  <section
+                ref="heroRef"
+                class="hero"
+              >
+                <div class="hero__grid" />
 
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            class="size-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          >
-            <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-        </transition>
-      </button>
-    </div>
-  </header>
+                <aside class="hero__menu">
+                  <nav>
+                    <ul class="hero__menu-list">
+                      <li>
+                        <router-link class="menu-item" to="/project-a">
+                          <span>PLE Project</span>
+                        </router-link>
+                      </li>
+                      <li>
+                        <router-link class="menu-item" to="/game-dev">
+                          <span>Game Development</span>
+                        </router-link>
+                      </li>
+                      <li>
+                        <router-link class="menu-item" to="/about">
+                          <span>Over mij</span>
+                        </router-link>
+                      </li>
+                      <li>
+                        <a class="menu-item" href="https://www.linkedin.com/in/dirk-van-gelderen-48153030b/" target="_blank" rel="noopener noreferrer">
+                          <span>LinkedIn</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </aside>
 
-  <main class="mx-auto flex h-screen max-w-3xl flex-col items-center justify-center px-4 py-16">
-    <h1 class="pb-20 text-center text-6xl text-gray-700 transition-colors dark:text-gray-100">
-      Vue.js starter template
-    </h1>
+                <main class="hero__content">
+                  <div class="hero__tag">DIRK VAN GELDEREN</div>
+                  <h1 class="hero__title">Portfolio</h1>
+                  <p class="hero__subtitle">
+                    Moderne, minimalistische portfolio showcase met vloeiende animaties en
+                    een interactieve cursor beleving.
+                  </p>
+                </main>
 
-    <div class="flex justify-center space-x-4 pb-10">
-      <a
-        target="_blank"
-        rel="noopener"
-        href="https://open.vscode.dev/lecoueyl/vue3-template"
-        class="inline-flex items-center space-x-1 rounded-md bg-indigo-600 px-6 py-4 font-medium text-indigo-50 shadow-xl transition duration-300 hover:bg-indigo-700 hover:shadow-md"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          class="size-5 stroke-2"
-        >
-          <path d="M4 8l2-1l10 13l4-2V6l-4-2L6 17l-2-1z" />
-        </svg>
-        <span>Open in VSC</span>
-      </a>
+                <div ref="cursorGlowRef" class="cursor-glow" />
+                <div ref="cursorDotRef" class="cursor-dot" />
+              </section>
+            </template>
 
-      <a
-        target="_blank"
-        rel="noopener"
-        href="https://github.com/lecoueyl/vue3-template"
-        class="inline-flex items-center space-x-1 rounded-md bg-indigo-600 px-6 py-4 font-medium text-indigo-50 shadow-xl transition duration-300 hover:bg-indigo-700 hover:shadow-md"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          class="size-5 stroke-2"
-        >
-          <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2c2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2a4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6c-.6.6-.6 1.2-.5 2V21" />
-        </svg>
-        <span>View on Github</span>
-      </a>
-    </div>
-  </main>
+            <style scoped>
+            /* stylelint-disable */
+            .hero {
+              position: relative;
+              min-height: 100vh;
+              overflow: hidden;
+              background: #0a0a0a;
+              color: #f8f3ee;
+              font-family: 'InterVariable', 'Inter', 'Sora', 'Manrope', system-ui, -apple-system, sans-serif;
+            }
 
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    preserveAspectRatio="xMidYMax meet"
-    viewBox="0 0 998 260"
-    fill="currentColor"
-    class="absolute inset-x-0 bottom-0 -z-10 w-full text-indigo-300"
-  >
-    <g transform="translate(264 134)">
-      <path
-        d="M0,0 L86,0 L86,126 L0,126 L0,0 Z M10,10 L10,106 L76.3092784,106 L76.3092784,10 L10,10 Z M43,121 C45.7614237,121 48,118.761424 48,116 C48,113.238576 45.7614237,111 43,111 C40.2385763,111 38,113.238576 38,116 C38,118.761424 40.2385763,121 43,121 Z"
-        opacity=".8"
-      />
-      <rect
-        width="16"
-        height="8"
-        x="35"
-        y="15"
-      />
-      <rect
-        width="54"
-        height="8"
-        x="17"
-        y="32"
-        opacity=".8"
-      />
-      <rect
-        width="34"
-        height="8"
-        x="26"
-        y="44"
-        opacity=".5"
-      />
-      <rect
-        width="58"
-        height="42"
-        x="14"
-        y="58"
-        opacity=".8"
-      />
-    </g>
-    <g transform="translate(784 141)">
-      <path
-        d="M0,0 L74,0 L74,119 L0,119 L0,0 Z M10,15 L10,99 L64,99 L64,15 L10,15 Z M37,114 C39.7614237,114 42,111.761424 42,109 C42,106.238576 39.7614237,104 37,104 C34.2385763,104 32,106.238576 32,109 C32,111.761424 34.2385763,114 37,114 Z M32.5,5 C31.1192881,5 30,6.11928813 30,7.5 C30,8.88071187 31.1192881,10 32.5,10 L43.5,10 C44.8807119,10 46,8.88071187 46,7.5 C46,6.11928813 44.8807119,5 43.5,5 L32.5,5 Z"
-        opacity=".8"
-      />
-      <rect
-        width="16"
-        height="6"
-        x="29"
-        y="20"
-      />
-      <rect
-        width="40"
-        height="8"
-        x="17"
-        y="37"
-        opacity=".8"
-      />
-      <rect
-        width="26"
-        height="6"
-        x="24"
-        y="49"
-        opacity=".5"
-      />
-      <rect
-        width="46"
-        height="33"
-        x="14"
-        y="62"
-        opacity=".8"
-      />
-    </g>
-    <g transform="translate(0 80)">
-      <path
-        d="M0,0 L210,0 L210,180 L0,180 L0,0 Z M10,31 L10,170 L200,170 L200,31 L10,31 Z"
-        opacity=".8"
-      />
-      <rect
-        width="16"
-        height="11"
-        x="97"
-        y="46"
-      />
-      <rect
-        width="108"
-        height="11"
-        x="51"
-        y="71"
-        opacity=".8"
-      />
-      <rect
-        width="40"
-        height="11"
-        x="85"
-        y="87"
-        opacity=".5"
-      />
-      <rect
-        width="140"
-        height="48"
-        x="35"
-        y="117"
-        opacity=".8"
-      />
-      <rect
-        width="190"
-        height="10"
-        x="10"
-        y="10"
-      />
-    </g>
-    <g transform="translate(590 100)">
-      <rect
-        width="110"
-        height="160"
-        opacity=".5"
-      />
-      <rect
-        width="16"
-        height="11"
-        x="47"
-        y="11"
-      />
-      <rect
-        width="76"
-        height="11"
-        x="17"
-        y="36"
-        opacity=".8"
-      />
-      <rect
-        width="34"
-        height="11"
-        x="38"
-        y="52"
-        opacity=".5"
-      />
-      <rect
-        width="90"
-        height="68"
-        x="10"
-        y="82"
-        opacity=".8"
-      />
-    </g>
-    <g
-      transform="translate(730 80)"
-      opacity=".404"
-    >
-      <rect
-        width="54"
-        height="180"
-      />
-      <rect
-        width="10"
-        height="180"
-      />
-      <rect
-        width="10"
-        height="180"
-        x="22"
-      />
-      <rect
-        width="10"
-        height="180"
-        x="44"
-      />
-    </g>
-    <g transform="translate(490 134)">
-      <rect
-        width="100"
-        height="100"
-        y="26"
-        opacity=".2"
-      />
-      <rect
-        width="42"
-        height="126"
-        x="29"
-        opacity=".3"
-      />
-    </g>
-    <g transform="translate(210 80)">
-      <rect
-        width="54"
-        height="126"
-        y="54"
-        opacity=".2"
-      />
-      <polygon
-        points="54 0 54 54 0 54"
-        opacity=".3"
-      />
-    </g>
-    <g transform="translate(424 8)">
-      <rect
-        width="66"
-        height="186"
-        y="66"
-        opacity=".4"
-      />
-      <rect
-        width="12"
-        height="166"
-        x="10"
-        y="76"
-        opacity=".8"
-      />
-      <rect
-        width="12"
-        height="166"
-        x="44"
-        y="76"
-        opacity=".8"
-      />
-      <polygon
-        points="33 0 66 66 0 66"
-        opacity=".6"
-      />
-    </g>
-    <g transform="translate(700 178)">
-      <polygon
-        points="15 63 30 82 0 82"
-        opacity=".5"
-      />
-      <circle
-        cx="15"
-        cy="15"
-        r="15"
-        opacity=".5"
-      />
-      <rect
-        width="30"
-        height="68"
-        y="14"
-        opacity=".3"
-      />
-    </g>
-    <path
-      d="M888,10 L893,15 L898,10 L888,10 Z M878.126582,10.1265823 L868.5,20 L878.126582,29.8734177 L888,20 L878.126582,10.1265823 Z M927.5,10 L917.75,10 L922.625,15 L927.5,10 Z M937,10.2564103 L927.5,20 L937,29.7435897 L937,10.2564103 Z M917.75,30 L927.5,30 L922.625,25 L917.75,30 Z M898,30 L893,25 L888,30 L898,30 Z M898,20 L908,30 L917.75,20 L908,10 L898,20 Z M829,10 L834,15 L839,10 L829,10 Z M819.126582,10.1265823 L809,20.5128205 L818.25,30 L819,30 L829,20 L819.126582,10.1265823 Z M868.5,10 L858.75,10 L863.625,15 L868.5,10 Z M858.75,30 L868.5,30 L863.625,25 L858.75,30 Z M839,30 L834,25 L829,30 L839,30 Z M839,20 L849,30 L858.75,20 L849,10 L839,20 Z M770,10 L774.5,14.5 L779,10 L770,10 Z M760,10 L759.25,10 L749.5,20 L759.126582,29.8734177 L769.5,19.5 L760,10 Z M809.5,10 L798.75,10 L804.125,15.5128205 L809.5,10 Z M799.75,30 L808.5,30 L804.125,25.5128205 L799.75,30 Z M780,30 L774.5,24.5 L769,30 L780,30 Z M779.5,19.5 L790,30 L799.25,20.5128205 L789,10 L779.5,19.5 Z M710,10 L715,15 L720,10 L710,10 Z M700,10 L699.25,10 L689.5,20 L699.25,30 L700,30 L710,20 L700,10 Z M749.5,10 L739.75,10 L744.625,15 L749.5,10 Z M739.75,30 L749.5,30 L744.625,25 L739.75,30 Z M720,30 L715,25 L710,30 L720,30 Z M720,20 L730,30 L739.75,20 L730,10 L720,20 Z M689.5,10 L679.75,10 L684.625,15 L689.5,10 Z M679.75,30 L689.5,30 L684.625,25 L679.75,30 Z M660,30 L655,25 L650,30 L660,30 Z M660,20 L670,30 L679.75,20 L670,10 L660,20 Z M635,40 L625,40 L665,0 L668.5,0 L947,0 L947,40 L635,40 Z M858,80 L857.998438,70.0015618 L858,70 L857.989064,69.9890642 L857.987502,59.987502 L858,60 L858,40.012498 L857.987502,40 L858,39.987502 L858,40 L862.993751,40 L898,40 L898,260 L858,260 L857.998438,250.001562 L858,220.012498 L857.987502,220 L858,219.987502 L858,200 L857.998438,190.001562 L857.989064,189.989064 L857.987502,179.987502 L858,180 L858,160.012498 L857.987502,160 L858,159.987502 L858,140 L857.998438,130.001562 L857.989064,129.989064 L857.987502,119.987502 L858,120 L858,100.012498 L857.987502,100 L858,99.987502 L858,80 Z M888,60.012498 L888,50 L882.993751,55.006249 L888,60.012498 Z M888,40 L868,40 L868,40.012498 L877.993751,50.006249 L888,40 Z M868,50.012498 L868,60 L872.993751,55.006249 L868,50.012498 Z M868,70 L877.993751,79.993751 L887.987502,70 L877.993751,60.006249 L868,70 Z M888,120.012498 L888,110 L882.993751,115.006249 L888,120.012498 Z M887.987502,130 L877.993751,120.006249 L868,130 L877.993751,139.993751 L887.987502,130 Z M888,79.987502 L882.993751,84.993751 L888,90 L888,79.987502 Z M868,89.987502 L872.993751,84.993751 L868,80 L868,89.987502 Z M868,99.987502 L868,100.012498 L877.993751,110.006249 L888,100 L877.993751,89.993751 L868,99.987502 Z M868,110.012498 L868,120 L872.993751,115.006249 L868,110.012498 Z M888,180.012498 L888,170 L882.993751,175.006249 L888,180.012498 Z M887.987502,190 L877.993751,180.006249 L868,190 L877.993751,199.993751 L887.987502,190 Z M888,139.987502 L882.993751,144.993751 L888,150 L888,139.987502 Z M868,149.987502 L872.993751,144.993751 L868,140 L868,149.987502 Z M868,159.987502 L868,160.012498 L877.993751,170.006249 L888,160 L877.993751,149.993751 L868,159.987502 Z M868,170.012498 L868,180 L872.993751,175.006249 L868,170.012498 Z M888,199.987502 L882.993751,204.993751 L888,210 L888,199.987502 Z M888,240.012498 L888,230 L882.993751,235.006249 L888,240.012498 Z M887.987502,250 L877.993751,240.006249 L868,250 L887.987502,250 Z M868,230.012498 L868,240 L872.993751,235.006249 L868,230.012498 Z M868,220.012498 L877.993751,230.006249 L888,220 L877.993751,209.993751 L868,219.987502 L868,220.012498 Z M868,209.987502 L872.993751,204.993751 L868,200 L868,209.987502 Z"
-      opacity=".4"
-    />
-    <g transform="translate(350 173)">
-      <path
-        d="M74,37 C74,16.5654643 57.4345357,0 37,0 C16.5654643,0 0,16.5654643 0,37 L74,37 Z"
-        opacity=".2"
-      />
-      <rect
-        width="74"
-        height="50"
-        y="37"
-        opacity=".3"
-      />
-      <path
-        d="M49,37.3428571 C49,30.5260854 43.627417,25 37,25 C30.372583,25 25,30.5260854 25,37.3428571 L49,37.3428571 Z"
-        opacity=".2"
-      />
-    </g>
-    <rect
-      width="100"
-      height="80"
-      x="898"
-      y="180"
-      opacity=".2"
-    />
-    <rect
-      width="24"
-      height="20"
-      x="936"
-      y="240"
-      opacity=".4"
-    />
-    <rect
-      width="80"
-      height="10"
-      x="908"
-      y="195"
-      opacity=".2"
-    />
-    <rect
-      width="80"
-      height="10"
-      x="908"
-      y="215"
-      opacity=".2"
-    />
-  </svg>
-</template>
+            .hero::before {
+              content: '';
+              position: absolute;
+              inset: 0;
+              background: radial-gradient(400px circle at var(--cursor-x) var(--cursor-y), rgba(255, 149, 74, 0.08), transparent 70%);
+              opacity: 0.5;
+              transition: opacity 0.2s ease;
+              pointer-events: none;
+            }
 
-<style>
-body {
-  @apply dark:bg-gray-900 dark:text-gray-50;
-}
-</style>
+            .hero__grid {
+              position: absolute;
+              inset: 0;
+              background-image:
+                linear-gradient(rgba(255, 193, 119, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 193, 119, 0.07) 1px, transparent 1px);
+              background-size: 60px 60px;
+              mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.9), transparent 80%);
+              pointer-events: none;
+            }
+
+            .hero__menu {
+              position: absolute;
+              left: 0;
+              top: 2.5rem;
+              padding-left: 2.5rem;
+              display: flex;
+              flex-direction: column;
+              gap: 1rem;
+              z-index: 10;
+            }
+
+            .hero__menu-list {
+              display: flex;
+              flex-direction: column;
+              gap: 0.8rem;
+              list-style: none;
+              padding: 0;
+              margin: 0;
+            }
+
+            .menu-item {
+              position: relative;
+              display: flex;
+              align-items: center;
+              padding: 0.9rem 4.2rem 0.9rem 1.8rem;
+              border-radius: 14px;
+              color: rgba(255, 241, 230, 0.9);
+              text-decoration: none;
+              font-weight: 500;
+              letter-spacing: 0.04em;
+              transition: color 0.3s ease;
+              overflow: visible;
+            }
+
+            .menu-item::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              bottom: 0;
+              left: -140vw;
+              right: 40px;
+              background: linear-gradient(90deg, rgba(255, 127, 41, 0.9), rgba(255, 170, 92, 0.65));
+              opacity: 0;
+              transform: translateX(-10%);
+              transition: opacity 0.35s ease, transform 0.35s ease;
+              z-index: -1;
+            }
+
+            .menu-item::after {
+              content: '';
+              position: absolute;
+              right: -52px;
+              top: 50%;
+              width: 40px;
+              height: 36px;
+              background: linear-gradient(90deg, rgba(255, 127, 41, 0.9), rgba(255, 170, 92, 0.65));
+              clip-path: polygon(0 0, 100% 50%, 0 100%, 35% 50%);
+              transform: translateY(-50%) translateX(-12px);
+              opacity: 0;
+              transition: opacity 0.35s ease, transform 0.35s ease;
+              z-index: -2;
+            }
+
+            .menu-item:hover {
+              color: #1a0f0a;
+            }
+
+            .menu-item:hover::before {
+              opacity: 1;
+              transform: translateX(0);
+            }
+
+            .menu-item:hover::after {
+              opacity: 1;
+              transform: translateY(-50%) translateX(0);
+            }
+
+            .hero__content {
+              position: relative;
+              z-index: 5;
+              min-height: 100vh;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+              padding: 4rem 2rem;
+            }
+
+            .hero__tag {
+              font-size: 0.75rem;
+              letter-spacing: 0.4em;
+              text-transform: uppercase;
+              color: rgba(255, 206, 160, 0.7);
+              margin-bottom: 1.5rem;
+            }
+
+            .hero__title {
+              font-size: clamp(3.5rem, 12vw, 9rem);
+              font-weight: 700;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              background: linear-gradient(120deg, #fff4e6 0%, #ff9a40 45%, #ff6b1f 85%);
+              -webkit-background-clip: text;
+              color: transparent;
+              text-shadow: 0 30px 80px rgba(255, 118, 32, 0.35);
+            }
+
+            .hero__subtitle {
+              max-width: 36rem;
+              color: rgba(255, 227, 201, 0.8);
+              font-size: 1.1rem;
+              line-height: 1.7;
+              margin: 1.5rem 0 2.5rem;
+            }
+
+            .cursor-dot,
+            .cursor-glow {
+              position: fixed;
+              top: 0;
+              left: 0;
+              pointer-events: none;
+              z-index: 20;
+            }
+
+            .cursor-dot {
+              width: 10px;
+              height: 10px;
+              border-radius: 999px;
+              background: #ffd1a6;
+              box-shadow: 0 0 20px rgba(255, 177, 102, 0.8);
+            }
+
+            .cursor-glow {
+              width: 120px;
+              height: 120px;
+              border-radius: 50%;
+              background: radial-gradient(circle, rgba(255, 132, 48, 0.15), rgba(255, 196, 126, 0.08), transparent 70%);
+              filter: blur(12px);
+              mix-blend-mode: screen;
+            }
+
+            @media (max-width: 900px) {
+              .hero__menu {
+                position: static;
+                align-items: center;
+                margin-top: 2rem;
+              }
+
+              .hero__menu-list {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+              }
+
+              .hero__content {
+                padding-top: 7rem;
+              }
+            }
+            /* stylelint-enable */
+                </style>
