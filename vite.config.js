@@ -10,9 +10,9 @@ export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
   return defineConfig({
-    base: '/Portfolio/',
+    base: process.env.VITE_BASE || '/',
     plugins: [
-      eslint({ cache: false }),
+      ...(mode !== 'production' ? [eslint({ cache: false })] : []),
       stylelint(),
       svgLoader(),
       vue(),
